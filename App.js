@@ -1,125 +1,49 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useState, useEffect } from 'react';
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View, SafeAreaView, Button, TextInput, Image, Pressable } from 'react-native';
-import * as ImagePicker from 'expo-image-picker';
-import MapView, { Marker } from 'react-native-maps';
-import * as Location from "expo-location";
+import { StyleSheet, Text, View, SafeAreaView, Button, TextInput, Image, Pressable, Alert } from 'react-native';
+import { createNativeStackNavigator } from "@react-navigation/native-stack";
+import { NavigationContainer } from "@react-navigation/native";
+import Adicionar from './components/Adicionar';
+import Salvos from './components/Salvos';
+
 
 export default function App() {
-
+  /* Inicializando através de uma constante
+  o gerenciador de navegação Stack (pilha de telas) */
+  const Stack = createNativeStackNavigator();
   
-
-    const [foto, setFoto] = useState();
-
-    const acessarCamera = async () => {
-                                   
-                                     // Carregar/Acionar a Câmera de forma assíncrona
-  const imagem = await ImagePicker.launchCameraAsync({
-    allowsEditing: true,
-    aspect: [16, 9],
-    quality: 0.5,
-  });
-
-  console.log(imagem);
-  setFoto(imagem.assets[0].uri)
-}
-  
-
-
-  const salvar = () => {
-    console.log(foto);
-  }
-
-
-
-    /* State para a geolocalização */
-    const [minhaLocalizacao, setMinhaLocalizacao] = useState(null);
- 
-    useEffect( () => {
-      async function obterLocalizacao(){
-        // Acessando o status da requisição de permissão de uso
-        const { status } = await Location.requestForegroundPermissionsAsync();
-  
-        // Verificando o status
-        // if( status !== 'granted' ){
-        //   Alert.alert("Ops!", "Você não autorizou o uso de recursos de localização");
-        //   return;
-        // }
-  
-        // Acessando os dados de geolocalização
-        let localizacaoAtual = await Location.getCurrentPositionAsync({});
-        
-        // Adicionando os dados ao state
-        setMinhaLocalizacao(localizacaoAtual);
-      }
-  
-      obterLocalizacao();
-    }, [] )
-  
-    console.log(minhaLocalizacao);
-  
-    const regiaoInicial = { // Estado de SP
-      latitude: -23.533773,
-      longitude: -46.65529,
-      latitudeDelta: 10,
-      longitudeDelta: 10
-    }
-  
-    /* Usando state para controlar a localização */
-    const [localizacao, setLocalizacao] = useState();
-  
-    const marcarLocal = (event) => {
-      setLocalizacao({
-        latitudeDelta: 0.0922,
-        longitudeDelta: 0.0421,
-        latitude: minhaLocalizacao.coords.latitude,
-        longitude: minhaLocalizacao.coords.longitude
-      });
-    } 
-  
+    
 
   
 
   return (
-    <SafeAreaView style={estilos.container}>
-      <View >
-        <StatusBar style="auto" />
-        <Text style={estilos.titulo}>APP 1 - Fotos de Lugares Visitados</Text>
-        <View style={estilos.containerFoto}>
-          <TextInput style={estilos.input}></TextInput>
-          <Image source={{ uri: foto}} style={{ width: 350, height: 180, marginBottom: 30 }} />
-          <Pressable style={estilos.botao}>
-            <Text style={{textAlign: "center", fontWeight: "bold"}} onPress={acessarCamera}>Tirar Foto</Text>
-          </Pressable>
-       </View>        
+    <>
+    <StatusBar />
+     {/* O NavigationContainer deve envolver todas as telas
+      navegáveis do nosso App. */}
+      <NavigationContainer>
+        <Stack.Navigator
+          initialRouteName="Adicionar"
+          screenOptions={{
+            headerStyle: {
+              backgroundColor: "#5451a6",
+            },
+            headerTintColor: "white",
+          }}
+        >
+          <Stack.Screen
+            component={Adicionar}
+            name="Adicionar"
+            options={{
+              headerShown: false,
+            }}
+          />
 
-       <View style={estilos.container}>
-         <View style={estilos.viewMapa}>
-           <MapView 
-             style={estilos.mapa} 
-             region={localizacao ?? regiaoInicial}
-             liteMode={false} 
-             mapType="standard"
-           >
-             { localizacao &&
-               <Marker 
-                 coordinate={localizacao} 
-                 title="Aqui!!!"
-                 onPress={ e => console.log(e.nativeEvent) }
-               />
-             }
- 
-           </MapView>
-           <View style={estilos.viewBotao}>
-           <Button title='Onde estou?' onPress={marcarLocal} />
-         </View>
-         </View>
-       </View>
+    
 
-        <Button title='Salvar Dados'  style={estilos.salvar} onPress={salvar}/>
-      </View>
-    </SafeAreaView>
+           <Stack.Screen component={Salvos} name="Salvos" /> 
+        </Stack.Navigator>
+      </NavigationContainer>
+    </>
   );
 }
 
